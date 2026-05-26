@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTML编辑器</title>
+<!-- 新增Tailwind CSS CDN支持 -->
+<script src="lib/tailwind.js"></script>
+<link href="fonts/google-fonts.css" rel="stylesheet"/>
+<link href="fonts/material-icons.css" rel="stylesheet"/>
+<script src="lib/html2canvas.min.js"></script>
+<script src="lib/jspdf.umd.min.js"></script>
+<style>
+* {margin:0;padding:0;box-sizing:border-box;}
+html,body {height:100%;font-family:Microsoft YaHei;overflow:hidden;}
+
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: #f3f3f3;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  z-index: 10;
+}
+#htmlInput {
+  flex: 1;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.btn {
+  height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+.btn-load { background: #409eff; }
+.btn-sync { background: #67c23a; }
+
+.main {
+  display: flex;
+  height: calc(100vh - 50px);
+  margin-top: 50px;
+  overflow: hidden;
+}
+
+.left {
+  width: 280px;
+  background: #f6f6f6;
+  border-right: 1px solid #ddd;
+  padding: 12px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.tit {
+  font-weight: bold;
+  margin: 10px 0 6px;
+  font-size: 14px;
+}
+select, button {
+  width: 100%;
+  height: 36px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-bottom: 8px;
+}
+button {
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+.btn-primary { background: #409eff; }
+.btn-success { background: #67c23a; }
+.btn-warning { background: #ff9800; }
+.btn-danger { background: #f56c6c; }
+.btn-copy { background: #909399; }
+.btn-gopdf { background: #7c3aed; }
+.btn-file {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.btn-file button {
+  width: 50%;
+  font-size: 12px;
+  padding: 0;
+}
+.btn-pdf-option {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.btn-pdf-option button {
+  width: 50%;
+  font-size: 12px;
+  padding: 0;
+}
+
+.imgs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+.thumb {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+.thumb.active {
+  border-color: #409eff;
+}
+
+.template-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.template-item {
+  padding: 8px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 12px;
+}
+.template-item:hover {
+  border-color: #409eff;
+  background: #ecf5ff;
+}
+
+.right {
+  flex: 1;
+  background: #eee;
+  padding: 20px;
+  overflow: auto !important;
+  display: block;
+  position: relative;
+}
+#stage-container {
+  width: fit-content;
+  min-width: 100%;
+  display: flex;
+  justify-content: center;
+}
+#stage {
+  background: #fff;
+  transform-origin: top left !important;
+  position: relative;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  overflow: visible !important;
+  width: fit-content !important;
+  height: fit-content !important;
+}
+
+#stage [contenteditable]::selection,
+#stage ::selection {
+  background: rgba(64, 158, 255, 0.2);
+}
+#stage .selected-element {
+  outline: 2px dashed #409eff !important;
+  position: relative;
+  cursor: move;
+}
+
+#file {display: none;}
+#htmlFile {display: none;}
+.loading-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  z-index: 9999;
+  display: none;
+}
+
+#stage,
+#stage *[contenteditable="true"],
+#stage *:focus,
+#stage *::selection {
+    outline: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    caret-color: #333 !important;
+}
+
+#stage .material-icons {
+    width: 1em !important;
+    direction: rtl !important;
+    font-family: 'Material Icons' !important;
+}
+#stage .title-font {
+    font-family: "Source Code Pro", monospace !important;
+}
+#stage .subtitle-font {
+    font-family: "Roboto Flex", sans-serif !important;
+}
+#stage .ppt-slide {
+    width: 1280px !important;
+    height: 720px !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <input id="htmlInput" placeholder="粘贴HTML代码到这里">
+  <button class="btn btn-load" id="loadBtn">加载</button>
+  <button class="btn btn-sync" id="syncBtn">同步</button>
+</div>
+
+<div class="loading-mask" id="loadingMask">
+  <div>
+    <div>正在生成PDF...</div>
+    <div style="font-size:14px;margin-top:10px;">请不要关闭页面</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="left">
+    <div class="tit">预览缩放</div>
+    <select id="zoom">
+      <option value="0.3">30%</option>
+      <option value="0.5">50%</option>
+      <option value="0.7">70%</option>
+      <option value="0.8">80%</option>
+      <option value="1" selected>100%</option>
+      <option value="fit">自动适应窗口</option>
+    </select>
+
+    <div class="tit">可视化编辑</div>
+    <button class="btn-copy" id="copyBtn">复制选中内容</button>
+    <button class="btn-success" id="pasteBtn">粘贴内容</button>
+    <button class="btn-danger" id="deleteBtn">删除选中内容</button>
+
+    <div class="tit">新增内容模板</div>
+    <div class="template-list" id="templateList">
+      <div class="template-item" data-type="text">文本框</div>
+      <div class="template-item" data-type="title">标题</div>
+      <div class="template-item" data-type="subtitle">副标题</div>
+      <div class="template-item" data-type="image">图片容器</div>
+      <div class="template-item" data-type="button">按钮</div>
+      <div class="template-item" data-type="divider">分隔线</div>
+    </div>
+
+    <div class="tit">素材库（点击选中→替换）</div>
+    <div class="imgs" id="imgList">加载HTML后显示图片</div>
+
+    <button class="btn-primary" id="replace">选择本地图片替换</button>
+
+    <div class="tit">文件</div>
+    <div class="btn-file">
+      <button class="btn-primary" id="uploadHtmlBtn">上传HTML</button>
+      <button class="btn-success" id="downloadHtmlBtn">导出HTML</button>
+    </div>
+    <input type="file" id="htmlFile" accept=".html,.htm,.txt">
+
+    <button class="btn-gopdf" id="goPdfBtn">转到PDF工具</button>
+
+    <div class="tit">PDF导出</div>
+    <div class="btn-pdf-option">
+      <button class="btn-warning" id="pdfLongBtn">完整长页</button>
+      <button class="btn-primary" id="pdfPageBtn">分页PDF</button>
+    </div>
+    <select id="pdfOrientation" class="mt-2">
+      <option value="auto">自动识别方向</option>
+      <option value="portrait">纵向</option>
+      <option value="landscape">横向</option>
+    </select>
+
+    <input type="file" id="file" accept="image/*">
+  </div>
+
+  <div class="right">
+    <div id="stage-container">
+      <div id="stage" contenteditable="true"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const { jsPDF } = window.jspdf;
+const stage = document.getElementById('stage');
+const stageContainer = document.getElementById('stage-container');
+const htmlInput = document.getElementById('htmlInput');
+const loadBtn = document.getElementById('loadBtn');
+const syncBtn = document.getElementById('syncBtn');
+const zoom = document.getElementById('zoom');
+const imgList = document.getElementById('imgList');
+const replace = document.getElementById('replace');
+const file = document.getElementById('file');
+const copyBtn = document.getElementById('copyBtn');
+const pasteBtn = document.getElementById('pasteBtn');
+const deleteBtn = document.getElementById('deleteBtn');
+const templateList = document.getElementById('templateList');
+const pdfLongBtn = document.getElementById('pdfLongBtn');
+const pdfPageBtn = document.getElementById('pdfPageBtn');
+const loadingMask = document.getElementById('loadingMask');
+const pdfOrientation = document.getElementById('pdfOrientation');
+const uploadHtmlBtn = document.getElementById('uploadHtmlBtn');
+const downloadHtmlBtn = document.getElementById('downloadHtmlBtn');
+const htmlFile = document.getElementById('htmlFile');
+const goPdfBtn = document.getElementById('goPdfBtn');
+
+let selectedImg = null;
+let imgUrls = [];
+let copiedHtml = '';
+let selectedElement = null;
+
+let isDragging = false;
+let baseX = 0, baseY = 0;
+let offsetX = 0, offsetY = 0;
+let isEditing = false;
+
+function initStageEvents() {
+  stage.addEventListener('click', (e) => {
+    if (isDragging) return;
+    if (selectedElement) {
+      selectedElement.classList.remove('selected-element');
+    }
+    if (e.target !== stage) {
+      selectedElement = e.target;
+      selectedElement.classList.add('selected-element');
+      e.stopPropagation();
+    } else {
+      selectedElement = null;
+    }
+  });
+
+  stage.addEventListener('dblclick', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (selectedElement) {
+      selectedElement.classList.remove('selected-element');
+      selectedElement = null;
+    }
+    isEditing = true;
+    e.target.contentEditable = true;
+    e.target.focus();
+    const range = document.createRange();
+    const sel = window.getSelection();
+    range.selectNodeContents(e.target);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  });
+
+  stage.addEventListener('mousedown', (e) => {
+    if (!selectedElement || e.target !== selectedElement) return;
+    if (isEditing) return;
+    isDragging = true;
+    selectedElement.style.position = 'relative';
+    baseX = e.clientX;
+    baseY = e.clientY;
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging || !selectedElement) return;
+    const dx = e.clientX - baseX;
+    const dy = e.clientY - baseY;
+    selectedElement.style.left = (offsetX + dx) + 'px';
+    selectedElement.style.top = (offsetY + dy) + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDragging && selectedElement) {
+      offsetX = parseInt(selectedElement.style.left || 0);
+      offsetY = parseInt(selectedElement.style.top || 0);
+    }
+    isDragging = false;
+    isEditing = false;
+  });
+
+  stage.addEventListener('dragstart', (e) => {
+    e.preventDefault();
+  });
+
+  stage.addEventListener('blur', () => {
+    isEditing = false;
+  });
+}
+
+function getRealContentSize() {
+  const clone = stage.cloneNode(true);
+  clone.style.visibility = 'hidden';
+  clone.style.position = 'absolute';
+  clone.style.transform = 'none';
+  clone.style.top = '-9999px';
+  clone.style.left = '-9999px';
+  clone.style.width = 'auto';
+  clone.style.height = 'auto';
+  document.body.appendChild(clone);
+  const rect = clone.getBoundingClientRect();
+  const w = Math.ceil(rect.width);
+  const h = Math.ceil(rect.height);
+  document.body.removeChild(clone);
+  return { width: w, height: h };
+}
+
+function getPDFOrientation(contentSize) {
+  const selected = pdfOrientation.value;
+  if (selected !== 'auto') return selected;
+  return contentSize.width > contentSize.height ? 'landscape' : 'portrait';
+}
+
+function updateZoom() {
+  const z = zoom.value;
+  const { width: cw, height: ch } = getRealContentSize();
+  const wrap = document.querySelector('.right');
+  const pw = wrap.clientWidth - 40;
+  const ph = wrap.clientHeight - 40;
+  let scale = 1;
+  if (z === 'fit') {
+    const s1 = pw / cw;
+    const s2 = ph / ch;
+    scale = Math.min(s1, s2);
+    scale = Math.max(scale, 0.1);
+  } else {
+    scale = parseFloat(z);
+  }
+  stage.style.transform = `scale(${scale})`;
+  stageContainer.style.width = `${cw * scale}px`;
+  stageContainer.style.height = `${ch * scale}px`;
+}
+
+loadBtn.onclick = () => {
+  let htmlContent = htmlInput.value.trim();
+  if (htmlContent.includes('<html') || htmlContent.includes('<head')) {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    const bodyContent = tempDiv.querySelector('body')?.innerHTML || htmlContent;
+    stage.innerHTML = bodyContent;
+    stage.querySelectorAll('.material-icons').forEach(el => {
+      el.style.fontFamily = 'Material Icons !important';
+    });
+  } else {
+    stage.innerHTML = htmlContent;
+  }
+  setTimeout(() => {
+    scanImages();
+    updateZoom();
+  }, 100);
+};
+
+syncBtn.onclick = () => {
+  htmlInput.value = stage.innerHTML;
+};
+
+zoom.onchange = updateZoom;
+
+copyBtn.onclick = () => {
+  if (!selectedElement) return alert('请选中内容');
+  copiedHtml = selectedElement.outerHTML;
+  navigator.clipboard.writeText(copiedHtml).then(() => alert('复制成功'));
+};
+
+pasteBtn.onclick = () => {
+  if (!copiedHtml) return alert('请先复制');
+  const temp = document.createElement('div');
+  temp.innerHTML = copiedHtml;
+  if (selectedElement) selectedElement.after(temp.firstChild);
+  else stage.appendChild(temp.firstChild);
+  setTimeout(updateZoom, 200);
+};
+
+deleteBtn.onclick = () => {
+  if (!selectedElement) return alert('请选中内容');
+  selectedElement.remove();
+  selectedElement = null;
+  setTimeout(updateZoom, 200);
+};
+
+templateList.onclick = (e) => {
+  const t = e.target.dataset.type;
+  let html = '';
+  if (t === 'text') html = `<div contenteditable style="margin:10px; padding:10px; border:1px solid #ccc; min-height:60px;">文本</div>`;
+  if (t === 'title') html = `<h1 contenteditable style="margin:10px;">标题</h1>`;
+  if (t === 'subtitle') html = `<h2 contenteditable style="margin:10px;">副标题</h2>`;
+  if (t === 'image') html = `<div style="margin:10px;"><img src="https://placeholder.pics/svg/400x225"></div>`;
+  if (t === 'button') html = `<button style="margin:10px;">按钮</button>`;
+  if (t === 'divider') html = `<hr style="margin:10px 0;">`;
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+  stage.appendChild(temp.firstChild);
+  setTimeout(updateZoom, 200);
+};
+
+function scanImages() {
+  const set = new Set();
+  imgList.innerHTML = '';
+  imgUrls = [];
+  stage.querySelectorAll('img').forEach(i => { set.add(i.src); imgUrls.push({type:'img', el:i, src:i.src}); });
+  stage.querySelectorAll('*').forEach(i => {
+    const bg = getComputedStyle(i).backgroundImage;
+    const m = bg.match(/url\(["']?(.*?)["']?\)/);
+    if (m && m[1]) { set.add(m[1]); imgUrls.push({type:'bg', el:i, src:m[1]}); }
+  });
+  Array.from(set).forEach(src => {
+    const img = document.createElement('img');
+    img.className = 'thumb';
+    img.src = src;
+    img.onclick = () => {
+      document.querySelectorAll('.thumb').forEach(i=>i.classList.remove('active'));
+      img.classList.add('active');
+      selectedImg = imgUrls.find(u=>u.src === src);
+    };
+    imgList.appendChild(img);
+  });
+}
+
+replace.onclick = () => { if (selectedImg) file.click(); else alert('请选图片'); };
+file.onchange = (e) => {
+  if (!selectedImg) return;
+  const url = URL.createObjectURL(e.target.files[0]);
+  if (selectedImg.type === 'img') selectedImg.el.src = url;
+  if (selectedImg.type === 'bg') selectedImg.el.style.backgroundImage = `url(${url})`;
+  setTimeout(() => { scanImages(); updateZoom(); }, 200);
+};
+
+// 上传HTML
+uploadHtmlBtn.onclick = () => htmlFile.click();
+htmlFile.onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    htmlInput.value = evt.target.result;
+    loadBtn.click();
+  };
+  reader.readAsText(file);
+  htmlFile.value = '';
+};
+
+// 导出HTML
+downloadHtmlBtn.onclick = () => {
+  const html = `<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>导出文档</title>\n</head>\n<body>\n${stage.innerHTML}\n</body>\n</html>`;
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'exported.html';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+// 跳转到PDF工具
+goPdfBtn.onclick = () => {
+  htmlInput.value = stage.innerHTML;
+  const fullHtml = '<!DOCTYPE html>\n<html><head><meta charset="UTF-8"><base href="/html-tools/"></head><body>' + stage.innerHTML + '</body></html>';
+  try {
+    localStorage.setItem('pdf_export_html', fullHtml);
+  } catch(e) {}
+  window.open('/html-tools/html2pdf.html', '_blank');
+};
+
+// PDF导出
+async function exportPDF(isLong) {
+  loadingMask.style.display = 'flex';
+  try {
+    const oriTransform = stage.style.transform;
+    const oriWidth = stage.style.width;
+    const oriHeight = stage.style.height;
+    stage.style.transform = 'none';
+    stage.style.width = 'auto';
+    stage.style.height = 'auto';
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    await new Promise(resolve => setTimeout(resolve, 200));
+    const contentSize = getRealContentSize();
+    const orientation = getPDFOrientation(contentSize);
+    const canvas = await html2canvas(stage, {
+      scale: 3,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      width: contentSize.width,
+      height: contentSize.height,
+      x: 0,
+      y: 0,
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: contentSize.width,
+      windowHeight: contentSize.height,
+      ignoreElements: e => e.classList.contains('edit-hint'),
+      logging: false,
+      letterRendering: true,
+      allowTaint: true,
+      imageTimeout: 15000,
+      removeContainer: true
+    });
+    stage.style.transform = oriTransform;
+    stage.style.width = oriWidth;
+    stage.style.height = oriHeight;
+
+    const filename = isLong ? '完整长页.pdf' : '分页PDF.pdf';
+    const pdf = isLong
+      ? new jsPDF({ orientation, unit: 'px', format: [contentSize.width, contentSize.height] })
+      : new jsPDF({ orientation, unit: 'mm', format: 'a4' });
+    
+    if (isLong) {
+      pdf.addImage(canvas, 'PNG', 0, 0, contentSize.width, contentSize.height, '', 'FAST');
+    } else {
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth - 10;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let currentHeight = 0;
+      let pageNum = 1;
+      while (currentHeight < imgHeight) {
+        if (pageNum > 1) pdf.addPage();
+        const remainingHeight = imgHeight - currentHeight;
+        const renderHeight = Math.min(pageHeight - 10, remainingHeight);
+        pdf.addImage(canvas, 'PNG', 5, 5, imgWidth, imgHeight, '', 'FAST', 0, currentHeight * (canvas.height / imgHeight), imgWidth * (canvas.width / imgWidth), renderHeight * (canvas.height / imgHeight));
+        currentHeight += renderHeight;
+        pageNum++;
+      }
+    }
+    
+    // 替换 Adobe 标识后下载
+    const buf = pdf.output('arraybuffer');
+    const bytes = new Uint8Array(buf);
+    const search = new TextEncoder().encode('/Registry (Adobe)');
+    const replace = new TextEncoder().encode('/Registry (Generic)');
+    if (search.length === replace.length) {
+      for (let i = 0; i <= bytes.length - search.length; i++) {
+        let match = true;
+        for (let j = 0; j < search.length; j++) {
+          if (bytes[i + j] !== search[j]) { match = false; break; }
+        }
+        if (match) {
+          for (let j = 0; j < replace.length; j++) bytes[i + j] = replace[j];
+        }
+      }
+    }
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert('PDF导出成功！');
+  } catch (error) {
+    console.error('PDF导出失败:', error);
+    alert(`PDF导出失败：${error.message}`);
+  } finally {
+    loadingMask.style.display = 'none';
+  }
+}
+
+pdfLongBtn.onclick = () => exportPDF(true);
+pdfPageBtn.onclick = () => exportPDF(false);
+
+window.addEventListener('resize', () => {
+  if (zoom.value === 'fit') updateZoom();
+});
+
+new MutationObserver(() => {
+  setTimeout(updateZoom, 100);
+}).observe(stage, { childList: true, subtree: true, attributes: true });
+
+window.onload = () => {
+  initStageEvents();
+  updateZoom();
+  if (window.tailwind) {
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'noto': ['Noto Sans SC', 'sans-serif'],
+            'source-code': ['Source Code Pro', 'monospace'],
+            'roboto': ['Roboto Flex', 'sans-serif']
+          }
+        }
+      }
+    }
+  }
+};
+</script>
+</body>
+</html>

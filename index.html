@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base href="/html-tools/">
+<title>HTML 工具集</title>
+<link href="fonts/google-fonts.css" rel="stylesheet"/>
+<link href="fonts/material-icons.css" rel="stylesheet"/>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.container {
+  text-align: center;
+  padding: 2rem;
+}
+h1 {
+  color: #fff;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: 2px;
+}
+.subtitle {
+  color: rgba(255,255,255,0.6);
+  font-size: 1rem;
+  margin-bottom: 3rem;
+}
+.cards {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.card {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  width: 320px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: #fff;
+}
+.card:hover {
+  background: rgba(255,255,255,0.12);
+  transform: translateY(-6px);
+  border-color: rgba(255,255,255,0.25);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.card-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+.card h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+.card p {
+  color: rgba(255,255,255,0.55);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.features {
+  color: rgba(255,255,255,0.45);
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  text-align: left;
+  padding: 0 0.5rem;
+  line-height: 1.8;
+}
+.badge {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.25rem 0.8rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🛠 HTML 工具集</h1>
+  <p class="subtitle">纯本地前端工具，无需网络，所有处理在浏览器内完成</p>
+  <div class="cards">
+    <a class="card" href="/html-tools/editor.html">
+      <span class="card-icon">✏️</span>
+      <h2>HTML 编辑器</h2>
+      <p>可视化编辑 HTML 页面，所见即所得</p>
+      <div class="features">
+        ✅ 加载/同步 HTML 代码<br>
+        ✅ 可视化编辑：复制、粘贴、删除元素<br>
+        ✅ 拖拽移动元素位置<br>
+        ✅ 新增内容模板（标题、文本框、图片等）<br>
+        ✅ 图片素材库，支持本地替换<br>
+        ✅ 上传本地 HTML 文件编辑<br>
+        ✅ 导出编辑后的 HTML 文件<br>
+        ✅ 缩放预览 / 自适应窗口<br>
+        ✅ 导出完整长页 PDF / 分页 PDF<br>
+        ✅ 一键跳转到 HTML 转 PDF 工具
+      </div>
+      <span class="badge">上传 / 编辑 / 导出</span>
+    </a>
+    <a class="card" href="/html-tools/html2pdf.html">
+      <span class="card-icon">📄</span>
+      <h2>HTML 转 PDF</h2>
+      <p>上传 HTML 文件，一键转为完整长页 PDF</p>
+      <div class="features">
+        ✅ 点击上传或拖拽 HTML 文件<br>
+        ✅ 实时预览渲染效果<br>
+        ✅ 按内容实际尺寸生成单页超长 PDF<br>
+        ✅ 点击转换 + 下载两步操作<br>
+        ✅ 支持从编辑器一键跳转<br>
+        ✅ 纯前端处理，文件不上传服务器
+      </div>
+      <span class="badge">拖拽上传 / 完整长页</span>
+    </a>
+  </div>
+</div>
+</body>
+</html>
