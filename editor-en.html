@@ -231,21 +231,21 @@ button {
 <body>
 
 <div class="top-bar">
-  <input id="htmlInput" placeholder="粘贴HTML代码到这里">
-  <button class="btn btn-load" id="loadBtn">加载</button>
-  <button class="btn btn-sync" id="syncBtn">同步</button>
+  <input id="htmlInput" placeholder="Paste HTML code here">
+  <button class="btn btn-load" id="loadBtn">Load</button>
+  <button class="btn btn-sync" id="syncBtn">Sync</button>
 </div>
 
 <div class="loading-mask" id="loadingMask">
   <div>
-    <div>正在生成PDF...</div>
-    <div style="font-size:14px;margin-top:10px;">请不要关闭页面</div>
+    <div>Generating PDF...</div>
+    <div style="font-size:14px;margin-top:10px;">Please wait...</div>
   </div>
 </div>
 
 <div class="main">
   <div class="left">
-    <div class="tit">预览缩放</div>
+    <div class="tit">Zoom</div>
     <select id="zoom">
       <option value="0.3">30%</option>
       <option value="0.5">50%</option>
@@ -255,44 +255,44 @@ button {
       <option value="fit">自动适应窗口</option>
     </select>
 
-    <div class="tit">可视化编辑</div>
-    <button class="btn-copy" id="copyBtn">复制选中内容</button>
-    <button class="btn-success" id="pasteBtn">粘贴内容</button>
-    <button class="btn-danger" id="deleteBtn">删除选中内容</button>
+    <div class="tit">Editing</div>
+    <button class="btn-copy" id="copyBtn">Copy Selected</button>
+    <button class="btn-success" id="pasteBtn">Paste</button>
+    <button class="btn-danger" id="deleteBtn">Delete Selected</button>
 
-    <div class="tit">新增内容模板</div>
+    <div class="tit">Add Template</div>
     <div class="template-list" id="templateList">
-      <div class="template-item" data-type="text">文本框</div>
-      <div class="template-item" data-type="title">标题</div>
-      <div class="template-item" data-type="subtitle">副标题</div>
-      <div class="template-item" data-type="image">图片容器</div>
-      <div class="template-item" data-type="button">按钮</div>
-      <div class="template-item" data-type="divider">分隔线</div>
+      <div class="template-item" data-type="text">Text Box</div>
+      <div class="template-item" data-type="title">Title</div>
+      <div class="template-item" data-type="subtitle">Subtitle</div>
+      <div class="template-item" data-type="image">Image</div>
+      <div class="template-item" data-type="button">Button</div>
+      <div class="template-item" data-type="divider">Divider</div>
     </div>
 
-    <div class="tit">素材库（点击选中→替换）</div>
-    <div class="imgs" id="imgList">加载HTML后显示图片</div>
+    <div class="tit">Assets (click to select)</div>
+    <div class="imgs" id="imgList">Images shown after loading HTML</div>
 
-    <button class="btn-primary" id="replace">选择本地图片替换</button>
+    <button class="btn-primary" id="replace">Replace Image</button>
 
-    <div class="tit">文件</div>
+    <div class="tit">Files</div>
     <div class="btn-file">
-      <button class="btn-primary" id="uploadHtmlBtn">上传HTML</button>
-      <button class="btn-success" id="downloadHtmlBtn">导出HTML</button>
+      <button class="btn-primary" id="uploadHtmlBtn">Upload HTML</button>
+      <button class="btn-success" id="downloadHtmlBtn">Export HTML</button>
     </div>
     <input type="file" id="htmlFile" accept=".html,.htm,.txt">
 
-    <button class="btn-gopdf" id="goPdfBtn">转到PDF工具</button>
+    <button class="btn-gopdf" id="goPdfBtn">Go to PDF</button>
 
-    <div class="tit">PDF导出</div>
+    <div class="tit">PDF Export</div>
     <div class="btn-pdf-option">
-      <button class="btn-warning" id="pdfLongBtn">完整长页</button>
-      <button class="btn-primary" id="pdfPageBtn">分页PDF</button>
+      <button class="btn-warning" id="pdfLongBtn">Full Page</button>
+      <button class="btn-primary" id="pdfPageBtn">Paginated</button>
     </div>
     <select id="pdfOrientation" class="mt-2">
-      <option value="auto">自动识别方向</option>
-      <option value="portrait">纵向</option>
-      <option value="landscape">横向</option>
+      <option value="auto">Auto Detect</option>
+      <option value="portrait">Portrait</option>
+      <option value="landscape">Landscape</option>
     </select>
 
     <input type="file" id="file" accept="image/*">
@@ -477,13 +477,13 @@ syncBtn.onclick = () => {
 zoom.onchange = updateZoom;
 
 copyBtn.onclick = () => {
-  if (!selectedElement) return alert('请选中内容');
+  if (!selectedElement) return alert('Please select content');
   copiedHtml = selectedElement.outerHTML;
-  navigator.clipboard.writeText(copiedHtml).then(() => alert('复制成功'));
+  navigator.clipboard.writeText(copiedHtml).then(() => alert('Copied'));
 };
 
 pasteBtn.onclick = () => {
-  if (!copiedHtml) return alert('请先复制');
+  if (!copiedHtml) return alert('Copy something first');
   const temp = document.createElement('div');
   temp.innerHTML = copiedHtml;
   if (selectedElement) selectedElement.after(temp.firstChild);
@@ -492,7 +492,7 @@ pasteBtn.onclick = () => {
 };
 
 deleteBtn.onclick = () => {
-  if (!selectedElement) return alert('请选中内容');
+  if (!selectedElement) return alert('Please select content');
   selectedElement.remove();
   selectedElement = null;
   setTimeout(updateZoom, 200);
@@ -501,11 +501,11 @@ deleteBtn.onclick = () => {
 templateList.onclick = (e) => {
   const t = e.target.dataset.type;
   let html = '';
-  if (t === 'text') html = `<div contenteditable style="margin:10px; padding:10px; border:1px solid #ccc; min-height:60px;">文本</div>`;
-  if (t === 'title') html = `<h1 contenteditable style="margin:10px;">标题</h1>`;
-  if (t === 'subtitle') html = `<h2 contenteditable style="margin:10px;">副标题</h2>`;
+  if (t === 'text') html = `<div contenteditable style="margin:10px; padding:10px; border:1px solid #ccc; min-height:60px;">Text</div>`;
+  if (t === 'title') html = `<h1 contenteditable style="margin:10px;">Title</h1>`;
+  if (t === 'subtitle') html = `<h2 contenteditable style="margin:10px;">Subtitle</h2>`;
   if (t === 'image') html = `<div style="margin:10px;"><img src="https://placeholder.pics/svg/400x225"></div>`;
-  if (t === 'button') html = `<button style="margin:10px;">按钮</button>`;
+  if (t === 'button') html = `<button style="margin:10px;">Button</button>`;
   if (t === 'divider') html = `<hr style="margin:10px 0;">`;
   const temp = document.createElement('div');
   temp.innerHTML = html;
@@ -536,7 +536,7 @@ function scanImages() {
   });
 }
 
-replace.onclick = () => { if (selectedImg) file.click(); else alert('请选图片'); };
+replace.onclick = () => { if (selectedImg) file.click(); else alert('Select an image first'); };
 file.onchange = (e) => {
   if (!selectedImg) return;
   const url = URL.createObjectURL(e.target.files[0]);
@@ -545,7 +545,7 @@ file.onchange = (e) => {
   setTimeout(() => { scanImages(); updateZoom(); }, 200);
 };
 
-// 上传HTML
+// Upload HTML
 uploadHtmlBtn.onclick = () => htmlFile.click();
 htmlFile.onchange = (e) => {
   const file = e.target.files[0];
@@ -559,7 +559,7 @@ htmlFile.onchange = (e) => {
   htmlFile.value = '';
 };
 
-// 导出HTML
+// Export HTML
 downloadHtmlBtn.onclick = () => {
   const html = `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>导出文档</title>\n</head>\n<body>\n${stage.innerHTML}\n</body>\n</html>`;
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
@@ -571,7 +571,7 @@ downloadHtmlBtn.onclick = () => {
   URL.revokeObjectURL(url);
 };
 
-// 跳转到PDF工具
+// 跳Go to PDF
 goPdfBtn.onclick = () => {
   htmlInput.value = stage.innerHTML;
   const fullHtml = '<!DOCTYPE html>\n<html><head><meta charset="UTF-8"><base href="/html-tools/"></head><body>' + stage.innerHTML + '</body></html>';
@@ -581,7 +581,7 @@ goPdfBtn.onclick = () => {
   window.open('/html-tools/html2pdf.html', '_blank');
 };
 
-// PDF导出
+// PDF Export
 async function exportPDF(isLong) {
   loadingMask.style.display = 'flex';
   try {
@@ -618,7 +618,7 @@ async function exportPDF(isLong) {
     stage.style.width = oriWidth;
     stage.style.height = oriHeight;
 
-    const filename = isLong ? '完整长页.pdf' : '分页PDF.pdf';
+    const filename = isLong ? 'Full Page.pdf' : 'Paginated.pdf';
     const pdf = isLong
       ? new jsPDF({ orientation, unit: 'px', format: [contentSize.width, contentSize.height] })
       : new jsPDF({ orientation, unit: 'mm', format: 'a4' });
@@ -665,10 +665,10 @@ async function exportPDF(isLong) {
     document.body.appendChild(a); a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    alert('PDF导出成功！');
+    alert('PDF Export成功！');
   } catch (error) {
-    console.error('PDF导出失败:', error);
-    alert(`PDF导出失败：${error.message}`);
+    console.error('PDF Export失败:', error);
+    alert(`PDF Export失败：${error.message}`);
   } finally {
     loadingMask.style.display = 'none';
   }
