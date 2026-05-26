@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>HTML转PDF 完整长页版</title>
+ <script src="lib/html2canvas.min.js"></script>
+ <script src="lib/jspdf.umd.min.js"></script>
+ <style>
+ * {
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
+ font-family: system-ui, sans-serif;
+ }
+ body {
+ background: #f5f7fa;
+ padding: 2rem;
+ max-width: 1000px;
+ margin: 0 auto;
+ }
+ h1 {
+ text-align: center;
+ margin-bottom: 2rem;
+ color: #2d3748;
+ }
+ .wrap {
+ background: #fff;
+ padding: 2rem;
+ border-radius: 12px;
+ box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+ }
+ .upload-box {
+ border: 2px dashed #cbd5e0;
+ border-radius: 8px;
+ padding: 2rem;
+ text-align: center;
+ cursor: pointer;
+ margin-bottom: 1.5rem;
+ transition: 0.2s;
+ }
+ .upload-box:hover,.drag-active {
+ border-color: #2563eb;
+ background: #eff6ff;
+ }
+ #file-input { display: none; }
+ .btn-row {
+ display: flex;
+ gap: 1rem;
+ justify-content: center;
+ margin-bottom: 1.5rem;
+ }
+ button {
+ padding: 0.8rem 1.6rem;
+ border: none;
+ border-radius: 6px;
+ font-size: 1rem;
+ cursor: pointer;
+ }
+ .btn-conv { background: #2563eb; color: #fff; }
+ .btn-down { background: #16a34a; color: #fff; }
+ button:disabled { opacity: 0.6; cursor: not-allowed; }
+ .preview-area {
+ border: 1px solid #eee;
+ padding: 1rem;
+ min-height: 300px;
+ background: #fff;
+ overflow: auto;
+ }
+ .tip {
+ text-align: center;
+ color: #666;
+ font-size: 0.9rem;
+ margin-top: 1rem;
+ }
+ </style>
+</head>
+<body>
+<h1>HTML 转 PDF（完整长页不分页）</h1>
+<div class="wrap">
+ <div class="upload-box" id="uploadBox">
+ <p>📁 点击 / 拖拽上传 HTML 文件</p>
+ <p style="font-size:12px;color:#888;margin-top:8px">支持 html / htm</p>
+ </div>
+ <input type="file" id="file-input" accept=".html,.htm">
+
+ <div class="btn-row">
+ <button class="btn-conv" id="convertBtn" disabled>转为完整PDF</button>
+ <button class="btn-down" id="downloadBtn" disabled>下载PDF</button>
+ </div>
+
+ <div class="preview-area" id="preview"></div>
+ <p class="tip">本地纯前端生成 | 整张完整输出 | 强制不分页</p>
+</div>
+
+<script>
+const { jsPDF } = window.jspdf;
+const uploadBox = document.getElementById('uploadBox');
+const fileInput = document.getElementById('file-input');
+const convertBtn = document.getElementById('convertBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const preview = document.getElementById('preview');
+
+let pdfObj = null;
+let baseName = "";
+
+// 点击唤起上传
+uploadBox.onclick = () => fileInput.click();
+
+// 拖拽事件
+["dragover","dragleave","drop"].forEach(e=>{
+ uploadBox.addEventListener(e,ev=>ev.preventDefault());
+});
+uploadBox.addEventListener("dragover",()=>uploadBox.classList.add("drag-active"));
+uploadBox.addEventListener("dragleave",()=>uploadBox.classList.remove("drag-active"));
+uploadBox.addEventListener("drop",e=>{
+ uploadBox.classList.remove("drag-active");
+ if(e.dataTransfer.files[0]) readHtmlFile(e.dataTransfer.files[0]);
+});
+
+// 选择文件
+fileInput.onchange = e=>{
+ if(e.target.files[0]) readHtmlFile(e.target.files[0]);
+};
+
+// 读取并渲染HTML
+function readHtmlFile(file){
+ if(!/\.(html|htm)$/i.test(file.name)){
+ alert("请选择HTML格式文件");
+ return;
+ }
+ baseName = file.name.replace(/\.(html|htm)$/i,"");
+ const reader = new FileReader();
+ reader.readAsText(file);
+ reader.onload = res=>{
+ preview.innerHTML = res.target.result;
+ convertBtn.disabled = false;
+ uploadBox.innerHTML = `<p>✅ 已加载：${file.name}</p>`;
+ }
+}
+
+// 从编辑器跳转过来时，读取 localStorage 中的 HTML
+try {
+  const html = localStorage.getItem('pdf_export_html');
+  if (html) {
+    preview.innerHTML = html;
+    convertBtn.disabled = false;
+    uploadBox.innerHTML = '<p>✅ 来自编辑器</p>';
+    localStorage.removeItem('pdf_export_html');
+  }
+} catch(e) {}
+
+// 转换：自定义尺寸，一整张完整PDF，不分页
+convertBtn.onclick = async function(){
+ this.innerText = "转换中...";
+ this.disabled = true;
+ downloadBtn.disabled = true;
+ try{
+ const canvas = await html2canvas(preview,{
+ scale:2,
+ useCORS:true,
+ logging:false
+ });
+ // 按内容实际宽高生成【单页超长PDF】，不分页
+ const pdfW = canvas.width * 0.264583;
+ const pdfH = canvas.height * 0.264583;
+ const pdf = new jsPDF({
+ orientation: 'portrait',
+ unit: 'mm',
+ format: [pdfW, pdfH]
+ });
+ pdf.addImage(canvas,"JPEG",0,0,pdfW,pdfH);
+ pdfObj = pdf;
+ downloadBtn.disabled = false;
+ alert("转换完成，完整长页PDF已生成");
+ }catch(err){
+ alert("转换失败："+err.message);
+ }finally{
+ this.innerText = "转为完整PDF";
+ this.disabled = false;
+ }
+}
+
+// 下载
+downloadBtn.onclick = function(){
+ if(!pdfObj) return;
+ pdfObj.save(baseName + ".pdf");
+}
+</script>
+</body>
+</html>

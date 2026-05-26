@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HTML Tools</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
 .card{background:rgba(255,255,255,0.95);border-radius:20px;padding:3rem;max-width:680px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center}
 h1{font-size:2rem;margin-bottom:.5rem;color:#1a1a2e}
 .sub{color:#666;margin-bottom:2rem;font-size:1.1rem}
@@ -15,31 +15,28 @@ h1{font-size:2rem;margin-bottom:.5rem;color:#1a1a2e}
 .tool:hover{border-color:#667eea;background:#e8eeff;transform:translateY(-2px)}
 .tool-title{font-size:1.2rem;font-weight:600;color:#1a1a2e}
 .tool-desc{font-size:.9rem;color:#666;margin-top:4px}
-.footer{margin-top:2rem;font-size:.85rem;color:#999}
-.footer a{color:#667eea;text-decoration:none}
 .lang{display:flex;gap:1rem;justify-content:center;margin-bottom:1.5rem}
 .lang a{padding:.4rem 1rem;border-radius:20px;text-decoration:none;font-size:.9rem;background:#eee;color:#666;transition:all .2s}
 .lang a:hover{background:#667eea;color:#fff}
 .lang a.active{background:#667eea;color:#fff}
+.footer{margin-top:2rem;font-size:.85rem;color:#999}
+.footer a{color:#667eea;text-decoration:none}
 </style>
 </head>
-<body>
-<div class="card">
+<body><div class="card">
 <div class="lang">
-<a href="index.html" class="active">中文</a>
-<a href="index-en.html">English</a>
+<a href="index.html">中文</a>
+<a href="index-en.html" class="active">English</a>
 </div>
 <h1>🛠️ HTML Tools</h1>
-<p class="sub">纯前端 HTML 工具，无需后端，打开即用</p>
+<p class="sub">Pure frontend HTML tools — no backend, open and use.</p>
 <div class="tools">
-<a href="editor.html" class="tool">
-<div class="tool-title">✏️ HTML 编辑器</div>
-<div class="tool-desc">粘贴代码 → 拖拽编辑 → 同步导出。支持 PDF 导出</div></a>
-<a href="to-pdf.html" class="tool">
-<div class="tool-title">📄 HTML 转 PDF</div>
-<div class="tool-desc">上传 HTML 文件 → 完整长页 PDF 输出。效果优于编辑器导出</div></a>
+<a href="editor-en.html" class="tool">
+<div class="tool-title">✏️ HTML Editor</div>
+<div class="tool-desc">Paste HTML → Drag & drop edit → Sync code. PDF export supported.</div></a>
+<a href="to-pdf-en.html" class="tool">
+<div class="tool-title">📄 HTML to PDF</div>
+<div class="tool-desc">Upload HTML file → Full page PDF output. Better quality than editor export.</div></a>
 </div>
-<div class="footer"><a href="https://github.com/tanzhangjia/html-tools" target="_blank">GitHub</a> · MIT 开源</div>
-</div>
-</body>
-</html>
+<div class="footer"><a href="https://github.com/tanzhangjia/html-tools" target="_blank">GitHub</a> · MIT License</div>
+</div></body></html>
